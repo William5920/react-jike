@@ -1,27 +1,28 @@
 import {createSlice} from '@reduxjs/toolkit'
-import {request} from '@/utils'
+import {request, getToken, setToken} from '@/utils'
 
 const userStore = createSlice({
   name: 'user',
   initialState: {
-    token: ''
+    token: getToken() || ''
   },
   // 同步修改方法(同步actionCreater)
   reducers: {
-    setToken(state, action) {
+    setUserInfo(state, action) {
       state.token = action.payload
+      setToken(action.payload)
     }
   }
 })
 
 // 解构出actionCreater
-const {setToken} = userStore.actions
+const {setUserInfo} = userStore.actions
 
 // 异步方法封装(异步actionCreater)
 const fetchLogin = (loginForm) => {
   return async (dispatch) => {
     const res = await request.post('/authorizations', loginForm)
-    dispatch(setToken(res.data.token))
+    dispatch(setUserInfo(res.data.token))
   }
 }
 
