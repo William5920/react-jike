@@ -1,3 +1,3 @@
-import {request} from './request'
+import {http} from './request'
 
-export {request}
+export {http}
