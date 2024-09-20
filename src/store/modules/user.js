@@ -1,5 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit'
-import {request, getToken, setToken} from '@/utils'
+import {request, getToken, setToken, clearToken} from '@/utils'
 
 const userStore = createSlice({
   name: 'user',
@@ -16,12 +16,17 @@ const userStore = createSlice({
     setUserInfo(state, action) {
       console.log('用户信息', action.payload)
       state.userInfo = action.payload
+    },
+    clearUserInfo(state) {
+      state.token = ''
+      state.userInfo = {}
+      clearToken()
     }
   }
 })
 
 // 解构出actionCreater
-const {setUserToken, setUserInfo} = userStore.actions
+const {setUserToken, setUserInfo, clearUserInfo} = userStore.actions
 
 // 异步方法封装(异步actionCreater)
 const fetchLogin = (loginForm) => {
@@ -38,7 +43,7 @@ const fetchUserInfo = () => {
 }
 
 // 导出异步方法供业务模块使用
-export { fetchLogin, fetchUserInfo }
+export { fetchLogin, fetchUserInfo, clearUserInfo }
 
 // 获取并导出reducer函数用于模块整合
 const userReducer = userStore.reducer

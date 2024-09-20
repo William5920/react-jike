@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons'
 import './index.scss'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import {fetchUserInfo} from '@/store/modules/user'
+import {fetchUserInfo, clearUserInfo} from '@/store/modules/user'
 import {useDispatch, useSelector} from 'react-redux'
 import {useEffect} from 'react'
 
@@ -48,6 +48,11 @@ const GeekLayout = () => {
   // 根据当前路径高亮菜单
   const location = useLocation()
   const selectedKey = location.pathname
+  // 退出登录
+  const logout = () => {
+    dispatch(clearUserInfo())
+    navigate('/login')
+  }
 
   return (
     <Layout>
@@ -56,7 +61,12 @@ const GeekLayout = () => {
         <div className="user-info">
           <span className="user-name">{name || '柴柴老师'}</span>
           <span className="user-logout">
-            <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消">
+            <Popconfirm
+              title="是否确认退出？"
+              okText="退出"
+              cancelText="取消"
+              onConfirm={logout}
+            >
               <LogoutOutlined /> 退出
             </Popconfirm>
           </span>
