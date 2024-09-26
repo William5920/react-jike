@@ -1,5 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit'
-import {request, getToken, setToken, clearToken} from '@/utils'
+import {getToken, setToken, clearToken} from '@/utils'
+import {loginAPI, userProfileAPI} from "@/apis/user"
 
 const userStore = createSlice({
   name: 'user',
@@ -31,13 +32,13 @@ const {setUserToken, setUserInfo, clearUserInfo} = userStore.actions
 // 异步方法封装(异步actionCreater)
 const fetchLogin = (loginForm) => {
   return async (dispatch) => {
-    const res = await request.post('/authorizations', loginForm)
+    const res = await loginAPI(loginForm)
     dispatch(setUserToken(res.data.token))
   }
 }
 const fetchUserInfo = () => {
   return async (dispatch) => {
-    const res =await request.get('/user/profile')
+    const res =await userProfileAPI()
     dispatch(setUserInfo(res.data))
   }
 }
