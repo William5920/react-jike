@@ -3,26 +3,32 @@ import {
   Breadcrumb,
   Form,
   Button,
-  // Radio,
+  Radio,
   Input,
-  // Upload,
+  Upload,
   Space,
   Select,
   message
 } from 'antd'
-// import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import './index.scss'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import {request} from '@/utils'
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 
 const { Option } = Select
 
 const Publish = () => {
   // 频道列表
   const [channels, setChannels] = useState([])
+  // 上传图片
+  const [imageList, setImageList] = useState([])
+  // 图片类型
+  const [imageType, setImageType] = useState(1)
+  // 缓存图片
+  const cacheImageList = useRef([])
 
   async function fetchChannels() {
     const res = await request.get('/channels')
@@ -30,6 +36,9 @@ const Publish = () => {
   }
   // 发布文章
   const onFinish = async (formValue) => {
+    if (imageType !== imageList.length) {
+      return message.warning('图片类型和数量不一致')
+    }
     const { channel_id, content, title } = formValue
     const params = {
       channel_id,
@@ -37,15 +46,30 @@ const Publish = () => {
       title,
       type: 1,
       cover: {
-        type: 1,
-        images: []
+        type: imageType,
+        images: imageList.map(item => item.response.data.url)
       }
     }
-    console.log('发布文章参数', params)
     await request.post('/mp/articles?draft=false', params)
     message.success('发布文章成功')
   }
-
+  // 上传文件变更
+  const onUploadChange = info => {
+    setImageList(info.fileList)
+    cacheImageList.current = info.fileList
+  }
+  // 图片类型变更
+  const onTypeChange = e => {
+    const type = e.target.value
+    setImageType(type)
+    if (type === 1) {
+      const imageList = cacheImageList.current[0] ? [cacheImageList.current[0]] : []
+      setImageList(imageList)
+    }
+    else if (type === 3) {
+      setImageList(cacheImageList.current)
+    }
+  }
 
   // 获取频道列表
   useEffect(() => {
@@ -88,6 +112,33 @@ const Publish = () => {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item label="封面">
+            <Form.Item
+              name="type"
+            >
+              <Radio.Group onChange={onTypeChange}>
+                <Radio value={1}>单图</Radio>
+                <Radio value={3}>三图</Radio>
+                <Radio value={0}>无图</Radio>
+              </Radio.Group>
+            </Form.Item>
+            { imageType > 0 &&
+              <Upload
+                name="image"
+                listType="picture-card"
+                showUploadList
+                action={'http://geek.itheima.net/v1_0/upload'}
+                maxCount={imageType}
+                multiple={imageType > 1}
+                fileList={imageList}
+                onChange={onUploadChange}
+              >
+                <div style={{ marginTop: 8 }}>
+                  <PlusOutlined />
+                </div>
+              </Upload>
+            }
           </Form.Item>
           <Form.Item
             label="内容"
