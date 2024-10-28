@@ -10,6 +10,11 @@ const { Option } = Select
 const { RangePicker } = DatePicker
 
 const Article = () => {
+  // 状态枚举数据
+  const status = {
+    1: <Tag color="warning">待审核</Tag>,
+    2: <Tag color="success">审核通过</Tag>
+  }
   // 准备列数据
   const columns = [
     {
@@ -28,7 +33,7 @@ const Article = () => {
     {
       title: '状态',
       dataIndex: 'status',
-      render: data => <Tag color="green">审核通过</Tag>
+      render: data => status[data]
     },
     {
       title: '发布时间',
@@ -99,6 +104,7 @@ const Article = () => {
     channel_id: null
   })
   async function fetchArticleList() {
+    console.log('筛选参数', params)
     const res = await request.get('/mp/articles', { params })
     console.log('表格数据', res)
     const { results, total_count } = res.data
@@ -107,12 +113,25 @@ const Article = () => {
       count: total_count
     })
   }
+  // 筛选功能
+  const onFinish = formValue => {
+    setParams({
+      ...params,
+      status: formValue.status,
+      channel_id: formValue.channel_id,
+      begin_pubdate: formValue.date ? formValue.date[0].format('YYYY-MM-DD') : undefined,
+      end_pubdate: formValue.date ? formValue.date[1].format('YYYY-MM-DD') : undefined
+    })
+  }
+  // 筛选参数变化重新获取表格数据
+  useEffect(() => {
+    fetchArticleList()
+  }, [params])
 
-
+  // 频道数据只获取一次
   useEffect(() => {
     fetchChannels()
-    fetchArticleList()
-  }, []) 
+  }, [])
 
   return (
     <div>
@@ -125,11 +144,12 @@ const Article = () => {
         }
         style={{ marginBottom: 20 }}
       >
-        <Form initialValues={{ status: '' }}>
+        <Form initialValues={{ status: '' }} onFinish={onFinish}>
           <Form.Item label="状态" name="status">
             <Radio.Group>
               <Radio value={''}>全部</Radio>
               <Radio value={0}>草稿</Radio>
+              <Radio value={1}>待审核</Radio>
               <Radio value={2}>审核通过</Radio>
             </Radio.Group>
           </Form.Item>
