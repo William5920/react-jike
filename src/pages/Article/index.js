@@ -68,21 +68,7 @@ const Article = () => {
       }
     }
   ]
-  // 准备表格body数据
-  const data = [
-    {
-      id: '8218',
-      comment_count: 0,
-      cover: {
-        images: [],
-      },
-      like_count: 0,
-      pubdate: '2019-03-11 09:00:00',
-      read_count: 2,
-      status: 2,
-      title: 'wkwebview离线化加载h5资源解决方案'
-    }
-  ]
+
   // 获取频道列表
   const [channels, setChannels] = useState([])
   async function fetchChannels() {
@@ -97,7 +83,7 @@ const Article = () => {
   })
   const [params, setParams] = useState({
     page: 1,
-    per_page: 4,
+    per_page: 10,
     begin_pubdate: null,
     end_pubdate: null,
     status: null,
@@ -121,6 +107,13 @@ const Article = () => {
       channel_id: formValue.channel_id,
       begin_pubdate: formValue.date ? formValue.date[0].format('YYYY-MM-DD') : undefined,
       end_pubdate: formValue.date ? formValue.date[1].format('YYYY-MM-DD') : undefined
+    })
+  }
+  // 分页
+  const onPageChange = page => {
+    setParams({
+      ...params,
+      page
     })
   }
   // 筛选参数变化重新获取表格数据
@@ -179,7 +172,11 @@ const Article = () => {
         </Form>
       </Card>
       <Card title={`根据筛选条件共查询到${article.count}条结果：`}>
-        <Table rowKey="id" columns={columns} dataSource={article.list} />
+        <Table rowKey="id" columns={columns} dataSource={article.list} pagination={{
+          total: article.count,
+          pageSize: params.per_page,
+          onChange: onPageChange
+        }} />
       </Card>
     </div>
   )
